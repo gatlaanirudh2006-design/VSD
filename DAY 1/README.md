@@ -2,84 +2,46 @@
 
 ## 📌 Overview
 
-Day 1 focused on the basics of **Verilog RTL Design, Simulation, Verification, and Synthesis**.
+Day 1 focused on **Verilog RTL Design, Simulation, Verification, and basic Synthesis**.
 
-As a practical exercise, I implemented a **2-to-1 Multiplexer**, simulated it using **Icarus Verilog**, analyzed the waveform using **GTKWave**, and explored **Yosys** for RTL synthesis.
+Implemented and simulated a **2-to-1 Multiplexer** using **Icarus Verilog**, analyzed the waveform with **GTKWave**, and explored **Yosys** synthesis.
 
 ---
 
-## 🛠️ Tools Used
+## 🛠️ Tools
 
-**Verilog HDL** → RTL Design  
+**Verilog** → RTL Design  
 **Icarus Verilog** → Simulation  
 **GTKWave** → Waveform Analysis  
-**Yosys** → RTL Synthesis  
+**Yosys** → Synthesis  
 
 ---
 
-## 🔹 1. RTL Design & Verification
-<img width="1212" height="570" alt="image" src="https://github.com/user-attachments/assets/2072d9ab-462f-41be-bb20-5b1a3855069c" />
-
-### RTL Design
-Verilog is used to describe the required digital hardware and its logic.
-
-### Testbench
-A testbench provides input stimulus → observes outputs → verifies the design.
-
-### Simulator
-The simulator executes the RTL + testbench → produces simulation results.
-
----
-
-## 🔹 2. Simulation Flow
-<img width="1402" height="649" alt="image" src="https://github.com/user-attachments/assets/137b9337-afa3-4e8b-80a8-a339376fda5a" />
+## 🔹 1. RTL & Testbench
+<img width="1212" height="570" alt="image" src="https://github.com/user-attachments/assets/2c258afb-ca24-47c1-8a02-12cb93562004" />
 
 ```text
-Verilog Design
-      ↓
-  Testbench
-      ↓
-Icarus Verilog
-      ↓
-  Simulation
-      ↓
-   .vcd File
-      ↓
-   GTKWave
-      ↓
-Waveform Analysis
+RTL Design
+    ↓
+Testbench
+    ↓
+Simulation
+    ↓
+Verification
 ```
+
+A testbench applies inputs to the design and checks the output.
 
 ---
 
-## 🔹 3. Install Required Tools
-
-```bash
-sudo apt update
-sudo apt install iverilog
-sudo apt install gtkwave
-sudo apt install yosys
-```
-
----
-
-## 🔹 4. 2-to-1 Multiplexer
-
-A **2:1 MUX** selects one of two inputs using the `sel` signal.
+## 🔹 2. 2:1 Multiplexer
 
 ```text
-sel = 0  →  y = i0
-sel = 1  →  y = i1
+sel = 0 → y = i0
+sel = 1 → y = i1
 ```
 
-### Truth Table
-
-| `sel` | `y` |
-|:---:|:---:|
-| 0 | `i0` |
-| 1 | `i1` |
-
-### Verilog Code
+### Verilog
 
 ```verilog
 module good_mux (
@@ -102,7 +64,15 @@ endmodule
 
 ---
 
-## 🔹 5. Simulation
+## 🔹 3. Simulation
+![Uploading image.png…]()
+
+### Install
+
+```bash
+sudo apt update
+sudo apt install iverilog gtkwave yosys
+```
 
 ### Compile
 
@@ -122,49 +92,41 @@ iverilog good_mux.v tb_good_mux.v
 gtkwave tb_good_mux.vcd
 ```
 
-### Verification
+### Flow
 
 ```text
-Input Stimulus
-      ↓
-    2:1 MUX
-      ↓
-Output Observation
-      ↓
-   Verification
-```
-
-Expected behavior:
-
-```text
-sel = 0 → y follows i0
-sel = 1 → y follows i1
+Verilog + Testbench
+        ↓
+  Icarus Verilog
+        ↓
+    .vcd File
+        ↓
+     GTKWave
 ```
 
 ---
 
-## 🔹 6. Yosys Synthesis
-
-**Yosys** converts Verilog RTL → synthesized hardware representation.
+## 🔹 4. Yosys Synthesis
 
 ```text
 Verilog RTL
      ↓
    Yosys
      ↓
-Logic Processing
+  Synthesis
      ↓
 Technology Mapping
      ↓
-Synthesized Netlist
+ Synthesized Netlist
 ```
 
-### Basic Commands
+### Commands
 
 ```text
+read_liberty -lib <library>.lib
 read_verilog good_mux.v
 synth -top good_mux
-abc
+abc -liberty <library>.lib
 write_verilog synthesized_mux.v
 ```
 
@@ -172,29 +134,20 @@ write_verilog synthesized_mux.v
 
 ## 📚 Key Learnings
 
-**Verilog RTL** → Hardware Description  
-**Testbench** → Design Verification  
-**Icarus Verilog** → Simulation  
-**GTKWave** → Waveform Analysis  
-**Yosys** → RTL Synthesis  
+- Verilog RTL design
+- Testbench and simulation
+- 2:1 Multiplexer
+- Icarus Verilog
+- GTKWave
+- Yosys synthesis
+- ABC technology mapping
 
 ---
 
 ## 🏁 Day 1 Outcome
 
-Successfully implemented and verified a **2-to-1 Multiplexer** and understood the basic RTL development flow:
+**RTL Design → Simulation → Verification → Synthesis**
 
-```text
-RTL Design
-    ↓
-Testbench
-    ↓
-Simulation
-    ↓
-Waveform Verification
-    ↓
-RTL Synthesis
-```
+Successfully designed and verified a **2:1 Multiplexer** using Verilog and gained hands-on experience with the basic RTL flow.
 
 ### ✅ Day 1 Completed
-```text
