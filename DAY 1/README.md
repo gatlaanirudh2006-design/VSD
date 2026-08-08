@@ -1,77 +1,70 @@
-Day 1 – Verilog RTL Design, Simulation and Synthesis
+# 🚀 Day 1 — Verilog RTL Design & Simulation
 
-Day 1 focused on learning the basics of Verilog RTL design, simulation, testbench creation, waveform analysis, and RTL synthesis.
+> **RTL Design Learning Journey | Day 1**
 
-What I Learned
-Understood the difference between a Design, Testbench, and Simulator.
-Learned the basic workflow of RTL design and verification.
-Used Icarus Verilog for compiling and simulating Verilog code.
-Used GTKWave to observe simulation waveforms.
-Implemented a 2-to-1 Multiplexer using Verilog.
-Verified the multiplexer using a testbench.
-Explored Yosys for RTL synthesis and viewed the synthesized hardware representation.
-2-to-1 Multiplexer
+## 📌 Overview
 
-The multiplexer has two inputs, one select signal, and one output.
+Day 1 marked the beginning of my **RTL Design journey using Verilog HDL**.
 
-Select	Output
-0	i0
-1	i1
-Verilog Code
-module good_mux (
-    input i0,
-    input i1,
-    input sel,
-    output reg y
-);
+The focus of this session was to understand how a digital circuit is described using Verilog, how its functionality is verified through a testbench and simulation, and how RTL can be converted into a synthesized hardware representation.
 
-always @(*)
-begin
-    if(sel)
-        y <= i1;
-    else
-        y <= i0;
-end
+As a hands-on exercise, I designed and verified a **2-to-1 Multiplexer** using **Icarus Verilog** and analyzed its simulation waveform using **GTKWave**. I also explored the basics of **RTL synthesis with Yosys**.
 
-endmodule
-Simulation Commands
+---
 
-Install the required tools:
+## 🎯 Objectives
 
-sudo apt install iverilog
-sudo apt install gtkwave
+- Understand the fundamentals of **Verilog HDL**
+- Learn the purpose of a **Design Module**
+- Understand how a **Testbench** verifies a design
+- Perform RTL simulation using **Icarus Verilog**
+- Analyze simulation waveforms using **GTKWave**
+- Implement a **2-to-1 Multiplexer**
+- Get introduced to **RTL synthesis using Yosys**
 
-Compile the design and testbench:
+---
 
-iverilog good_mux.v tb_good_mux.v
+## 🛠️ Tools & Technologies
 
-Run the simulation:
+| Tool | Purpose |
+|------|---------|
+| **Verilog HDL** | Hardware description and RTL design |
+| **Icarus Verilog** | Compilation and simulation |
+| **GTKWave** | Simulation waveform analysis |
+| **Yosys** | RTL synthesis |
 
-./a.out
+---
 
-View the generated waveform:
+## 🔄 RTL Design Flow
 
-gtkwave tb_good_mux.vcd
-Simulation Flow
-Design + Testbench
-        ↓
-   Icarus Verilog
-        ↓
-     VCD File
-        ↓
-      GTKWave
-        ↓
- Waveform Analysis
-Yosys Synthesis
+The basic workflow followed during this experiment was:
 
-After simulation, the RTL design was explored using Yosys to understand how Verilog code is converted into a synthesized hardware representation.
-
-The synthesized multiplexer contains:
-
-A0 → i0
-A1 → i1
-S → sel
-X → y
-Day 1 Outcome
-
-Successfully implemented and verified a 2-to-1 Multiplexer using Verilog HDL, performed simulation using Icarus Verilog, analyzed the waveform using GTKWave, and explored RTL synthesis using Yosys.
+```text
+        RTL Design
+            │
+            ▼
+       Verilog Code
+            │
+            ▼
+        Testbench
+            │
+            ▼
+     Icarus Verilog
+            │
+            ▼
+       Simulation
+            │
+            ▼
+        VCD File
+            │
+            ▼
+         GTKWave
+            │
+            ▼
+   Waveform Verification
+            │
+            ▼
+          Yosys
+            │
+            ▼
+   Synthesized Hardware
