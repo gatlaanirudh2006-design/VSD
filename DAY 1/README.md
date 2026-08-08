@@ -65,7 +65,8 @@ endmodule
 ---
 
 ## 🔹 3. Simulation
-![Uploading image.png…]()
+<img width="1402" height="649" alt="image" src="https://github.com/user-attachments/assets/75e05595-dcf4-4eb6-981f-465d6613f599" />
+
 
 ### Install
 
