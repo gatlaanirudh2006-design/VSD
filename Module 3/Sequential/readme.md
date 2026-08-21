@@ -1,4 +1,4 @@
-# 🔄 Module 3 – Sequential Optimizations
+# 🔄 Module 3 – Sequential
 
 This section demonstrates **sequential logic optimization** using **Yosys** and focuses on how synthesis tools simplify sequential RTL containing constants, reset conditions, and flip-flop dependencies.
 
@@ -33,16 +33,17 @@ The examples covered are:
 ```text
 Module_3/
 └── Sequential/
-    ├── dff_const1/
-    │   └── dff_const1.v
-    ├── dff_const2/
-    │   └── dff_const2.v
-    ├── dff_const3/
-    │   └── dff_const3.v
-    ├── dff_const4/
-    │   └── dff_const4.v
-    └── dff_const5/
-        └── dff_const5.v
+    ├── README.md
+    ├── const3gtk.png
+    ├── const3syn.png
+    ├── dffconst1.png
+    ├── dffconst1syn.png
+    ├── dffconst2.png
+    ├── dffconst2syn.png
+    ├── dffconst3.png
+    ├── dffconst3syn.png
+    ├── dffconst4.png
+    └── dffconst5.png
 ```
 
 ---
@@ -316,6 +317,12 @@ Yosys uses **Graphviz** to display the synthesized design.
 
 This allows the optimized circuit to be compared with the original RTL structure.
 
+### 🖼️ Synthesis Results
+
+The repository contains synthesis screenshots for the sequential optimization examples.
+
+These images can be used to observe how the RTL structure changes after optimization.
+
 ---
 
 # 🌊 Optional GTKWave Flow
@@ -354,7 +361,7 @@ The `dff_const` examples show how apparently different RTL descriptions can resu
 
 # 🛠️ Tools Used
 
-| Tool               | Purpose                           |
+| **Tool**           | **Purpose**                       |
 | ------------------ | --------------------------------- |
 | **Verilog HDL**    | RTL description                   |
 | **Yosys**          | RTL synthesis and optimization    |
@@ -366,11 +373,35 @@ The `dff_const` examples show how apparently different RTL descriptions can resu
 
 # 📌 Module
 
-**Module 3 – Combinational and Sequential Optimizations**
+**Module 3 – Sequential**
 
 ### 📚 Topic
 
 **Sequential Optimization – Constant Propagation and Flip-Flop Optimization**
+
+---
+
+# 🔄 Optimization Flow
+
+The overall sequential optimization flow is:
+
+```text
+       RTL Verilog
+            ↓
+        Read RTL
+            ↓
+     Yosys Synthesis
+            ↓
+   Sequential Analysis
+            ↓
+ Constant Propagation
+            ↓
+ Redundant Logic Removal
+            ↓
+    Logic Optimization
+            ↓
+   Optimized Netlist
+```
 
 ---
 
@@ -382,5 +413,6 @@ The `dff_const1` to `dff_const5` examples show different forms of sequential beh
 
 Overall, this exercise provides a practical understanding of:
 
-**RTL → Sequential Optimization → Constant Propagation → Redundant Logic Removal → Synthesis → Technology Mapping**
+**RTL → Sequential Optimization → Constant Propagation → Redundant Logic Removal → Synthesis → Optimized Hardware**
 
+> 🚀 **Key takeaway:** Efficient synthesis is not just about converting RTL into hardware. Yosys analyzes the behavior of the RTL and removes or simplifies hardware that is not required while preserving the intended functionality.
