@@ -1,1 +1,487 @@
+🚀 BabySoC – Implementation
 
+🧑‍💻 A hands-on exploration of the RTL-to-GDSII journey using the VSDIAT BabySoC, covering RTL simulation, synthesis, SKY130 technology mapping, and gate-level verification.
+
+📌 Project Introduction
+
+This project focuses on taking a small RISC-V based System-on-Chip (SoC) from its RTL representation toward an ASIC-ready implementation.
+
+The work demonstrates the transition from behavioral hardware description → synthesized logic → technology-mapped gates → post-synthesis verification.
+
+The primary tools used in this stage of the flow are Icarus Verilog, GTKWave, Yosys, ABC, and the SKY130 standard-cell library.
+
+🏗️ BabySoC Structure
+
+The BabySoC integrates three important functional blocks:
+
+Block	Purpose
+🧠 RVMyth	RISC-V based processor and digital logic
+🔄 AVSDPLL	Generates the clock used by the processor
+🎚️ AVSDDAC	Converts the processor's digital output into an analog-style output
+
+The complete design is controlled through the top-level module:
+
+vsdbabysoc
+🔗 Functional Data Path
+                    ┌─────────────────┐
+                    │    AVSDPLL      │
+                    │      PLL        │
+                    └────────┬────────┘
+                             │
+                           CLK
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │     RVMyth      │
+                    │   RISC-V Core   │
+                    └────────┬────────┘
+                             │
+                      RV_TO_DAC[9:0]
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │     AVSDDAC     │
+                    │       DAC       │
+                    └────────┬────────┘
+                             │
+                             ▼
+                            OUT
+
+The processor generates the 10-bit RV_TO_DAC[9:0] data bus, which is then connected to the DAC.
+
+The PLL output provides the clock required by the digital processor.
+
+🌳 Module Hierarchy
+
+The main hierarchy of the SoC can be represented as:
+
+vsdbabysoc
+│
+├── avsddpll
+│
+├── rvmyth
+│
+└── avsddac
+
+At the center of the design is rvmyth, which performs the digital processing and produces the output data for the DAC.
+
+🔄 ASIC Implementation Journey
+
+The BabySoC is being evaluated through multiple stages of the digital ASIC flow:
+
+        📝 RTL Development
+                │
+                ▼
+        🧪 RTL Simulation
+                │
+                ▼
+        ⚙️ Logic Synthesis
+                │
+                ▼
+        🧩 Cell Technology Mapping
+                │
+                ▼
+        📦 Gate-Level Netlist
+                │
+                ▼
+        🔬 Gate-Level Simulation
+                │
+                ▼
+        ⏱️ Static Timing Analysis
+                │
+                ▼
+        🏭 Physical Implementation
+                │
+                ▼
+             GDSII
+📊 Implementation Status
+🔧 Design Stage	📍 Progress
+RTL Development	✅ Done
+RTL Simulation	✅ Done
+Logic Synthesis	✅ Done
+SKY130 Mapping	✅ Done
+Gate-Level Netlist	✅ Done
+Post-Synthesis Simulation	✅ Done
+Static Timing Analysis	🔄 Next
+Floorplanning	⏳ Pending
+Placement	⏳ Pending
+Clock Tree Synthesis	⏳ Pending
+Routing	⏳ Pending
+Physical Verification	⏳ Pending
+GDSII Generation	⏳ Pending
+1️⃣ RTL Implementation
+
+The BabySoC hardware is described using Verilog HDL.
+
+Representative RTL sources include:
+
+rtl/
+├── vsdbabysoc.v
+├── rvmyth.v
+└── clk_gate.v
+
+The design entry point is:
+
+vsdbabysoc
+
+At this stage, the code expresses the required hardware functionality using RTL constructs rather than physical standard-cell instances.
+
+This makes RTL simulation useful for checking the intended behavior before introducing technology-specific implementation details.
+
+2️⃣ 🧪 RTL Simulation
+
+Before synthesis, the RTL design was functionally verified using:
+
+🔹 Icarus Verilog
+🔹 GTKWave
+
+The simulator produces a VCD waveform file, which can then be inspected graphically using GTKWave.
+
+Simulation Pipeline
+Verilog RTL
+     │
+     ▼
+Icarus Verilog
+     │
+     ▼
+VCD Generation
+     │
+     ▼
+GTKWave
+     │
+     ▼
+Waveform Analysis
+🔍 Signals Observed
+
+The important signals monitored during simulation include:
+
+CLK
+REF
+reset
+VCO_IN
+VREFH
+RV_TO_DAC[9:0]
+OUT
+
+The RV_TO_DAC[9:0] signal is particularly important because it represents the digital information transferred from the processor section toward the DAC.
+
+3️⃣ ⚙️ RTL Synthesis with Yosys
+
+After functional verification, the RTL was processed using Yosys.
+
+Synthesis converts the behavioral RTL description into a hardware representation that can be implemented using cells available in the selected technology library.
+
+Yosys Processing Concept
+             RTL
+              │
+              ▼
+       Design Elaboration
+              │
+              ▼
+       Logic Optimization
+              │
+              ▼
+       Sequential Mapping
+              │
+              ▼
+       Boolean Optimization
+              │
+              ▼
+      Technology Mapping
+              │
+              ▼
+       SKY130 Cell Network
+
+The target standard-cell family used in this work is:
+
+sky130_fd_sc_hd
+
+The typical-cell Liberty file used for mapping is:
+
+sky130_fd_sc_hd__tt_025C_1v80.lib
+4️⃣ 🛠️ Major Yosys Operations
+
+The synthesis flow involved several Yosys commands:
+
+read_verilog
+dfflibmap
+opt
+abc
+show
+flatten
+setundef -zero
+clean -purge
+rename -enumerate
+write_verilog
+📖 Command Summary
+📥 read_verilog
+
+Loads the RTL Verilog source files into the Yosys design database.
+
+🔁 dfflibmap
+
+Associates flip-flop structures with corresponding sequential cells available in the target library.
+
+🧹 opt
+
+Reduces unnecessary logic and performs transformations that simplify the synthesized design.
+
+🧠 abc
+
+Uses ABC for Boolean optimization and technology mapping based on the selected Liberty library.
+
+👁️ show
+
+Provides a graphical view of the current Yosys design.
+
+🧱 flatten
+
+Collapses the module hierarchy so that lower-level logic becomes part of the surrounding design.
+
+0️⃣ setundef -zero
+
+Assigns zero to undefined values in the synthesized representation.
+
+🧽 clean -purge
+
+Removes unused or unnecessary design objects.
+
+🔢 rename -enumerate
+
+Provides systematic names to generated or internal objects.
+
+💾 write_verilog
+
+Exports the synthesized circuit as a Verilog netlist.
+
+5️⃣ 🧩 SKY130 Cell Mapping
+
+Once technology mapping is performed, the generic logic representation is converted into actual cells from the SKY130 standard-cell library.
+
+Some examples encountered in the mapped design are:
+
+sky130_fd_sc_hd__nand2_1
+sky130_fd_sc_hd__nor2_1
+sky130_fd_sc_hd__and2_0
+sky130_fd_sc_hd__mux2_1
+sky130_fd_sc_hd__xor2_1
+sky130_fd_sc_hd__dfrtp_1
+
+These cells represent different types of logic and sequential functionality.
+
+Conceptually, the transformation is:
+
+📝 RTL Logic
+     │
+     ▼
+🔧 Generic Synthesized Logic
+     │
+     ▼
+🧩 SKY130 Standard Cells
+
+The final mapped implementation contains a large number of standard-cell instances, showing how a relatively compact RTL design expands into a detailed gate-level representation.
+
+6️⃣ 📦 Gate-Level Netlist
+
+The synthesized design was exported as:
+
+baby_soc_netlist3.v
+
+Unlike RTL, this file describes the circuit using technology-specific standard cells.
+
+Netlist Creation
+RTL Sources
+     │
+     ▼
+   Yosys
+     │
+     ▼
+Logic Optimization
+     │
+     ▼
+    ABC
+     │
+     ▼
+SKY130 Cell Mapping
+     │
+     ▼
+Gate-Level Netlist
+
+The resulting netlist forms the basis for the next verification stage.
+
+7️⃣ 🔬 Post-Synthesis Gate-Level Simulation
+
+The synthesized netlist was subsequently simulated to check whether the mapped implementation still demonstrates the required functionality.
+
+The simulation environment included:
+
+🧩 Synthesized BabySoC netlist
+🏭 SKY130 Verilog cell models
+🧪 Existing testbench
+⚡ Icarus Verilog
+📈 GTKWave
+
+The simulation used the following configuration options:
+
+-DPOST_SYNTH_SIM
+-DFUNCTIONAL
+-DUNIT_DELAY=#1
+Gate-Level Verification Flow
+                 Gate-Level Netlist
+                         │
+              ┌──────────┴──────────┐
+              │                     │
+              ▼                     ▼
+       SKY130 Cell Models       Testbench
+              │                     │
+              └──────────┬──────────┘
+                         ▼
+                   Icarus Verilog
+                         │
+                         ▼
+                post_synth_sim.vcd
+                         │
+                         ▼
+                     GTKWave
+
+The generated VCD was opened in GTKWave to inspect the behavior of the synthesized implementation.
+
+8️⃣ 🔍 RTL and GLS Comparison
+
+To check functional consistency, the RTL waveform was compared with the post-synthesis waveform.
+
+The following signals were used as major reference points:
+
+CLK
+REF
+reset
+RV_TO_DAC[9:0]
+OUT
+
+The comparison showed that the synthesized implementation continues to produce the expected functional activity for the applied testbench.
+
+In particular:
+
+✅ The processor-side RV_TO_DAC[9:0] activity is preserved.
+✅ The DAC output OUT continues to show the expected behavior.
+✅ The major signal relationships remain consistent between RTL and GLS.
+
+Therefore, the synthesized netlist successfully maintains the intended functionality for the tested scenario.
+
+9️⃣ ⏱️ Functional GLS vs Timing GLS
+
+An important distinction in gate-level verification is between functional simulation and timing-aware simulation.
+
+🟢 Functional Gate-Level Simulation
+
+Functional GLS checks whether the synthesized gates perform the same logical operations as expected from the RTL.
+
+It primarily focuses on:
+
+Logic Functionality
+        ↓
+Correct 0 / 1 Behavior
+        ↓
+Functional Equivalence
+🟠 Timing Gate-Level Simulation
+
+Timing GLS additionally considers cell propagation delays and, depending on the implementation stage, interconnect delays.
+
+The objective becomes:
+
+Logic + Delay Information
+          ↓
+Timing-Aware Behavior
+
+The current BabySoC verification stage is primarily focused on functional post-synthesis simulation.
+
+Detailed timing analysis is planned as the next stage using Static Timing Analysis (STA).
+
+🔟 🧰 Tools Used
+💻 Hardware Description
+Verilog HDL
+🧪 Simulation
+Icarus Verilog
+GTKWave
+⚙️ Synthesis
+Yosys
+ABC
+🏭 Technology Library
+SKY130
+sky130_fd_sc_hd
+🐧 Development Environment
+Linux
+
+
+💡 What I Learned
+
+This project provided practical exposure to the early stages of an ASIC implementation flow.
+
+Key concepts explored:
+🏗️ SoC module hierarchy
+📝 RTL hardware description
+🧪 RTL functional verification
+⚙️ Logic synthesis
+🧹 Logic optimization
+🔄 Flip-flop technology mapping
+🧩 Standard-cell technology mapping
+🏭 SKY130 libraries
+📦 Gate-level netlists
+🔬 Post-synthesis simulation
+📈 Waveform-based verification
+🔍 RTL vs synthesized-design comparison
+⏱️ Functional vs timing-aware GLS
+🎯 Main Learning
+
+RTL describes the intended hardware behavior, while synthesis transforms that description into an optimized network of cells belonging to a specific semiconductor technology.
+
+The post-synthesis simulation then provides an important verification step to ensure that the synthesized implementation continues to exhibit the expected functionality.
+
+🏁 Current Milestone
+
+The BabySoC has currently reached:
+
+        RTL
+         │
+         ▼
+  RTL Simulation
+         │
+         ▼
+     Synthesis
+         │
+         ▼
+ SKY130 Mapping
+         │
+         ▼
+ Gate-Level Netlist
+         │
+         ▼
+ Post-Synthesis GLS
+         │
+         ▼
+       ✅ DONE
+🚀 Upcoming ASIC Stages
+
+The next phase of the project is Static Timing Analysis.
+
+The planned implementation path is:
+
+🔹 Static Timing Analysis
+          ↓
+🔹 Floorplanning
+          ↓
+🔹 Power Planning
+          ↓
+🔹 Placement
+          ↓
+🔹 Clock Tree Synthesis
+          ↓
+🔹 Routing
+          ↓
+🔹 Physical Verification
+          ↓
+🔹 GDSII Generation
+📌 Project Status
+Current Milestone: RTL → Post-Synthesis Simulation ✅
+
+The successful completion of synthesis and gate-level functional simulation marks an important step toward taking the BabySoC through the complete ASIC implementation flow.
