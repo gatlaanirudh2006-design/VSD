@@ -1,252 +1,274 @@
-🚀 Day 6 — From RTL to a Fabricable Chip with Open-Source EDA
+# 🚀 Day 6 — OpenLane, Open-Source EDA & RTL-to-GDSII
 
-Theme: Understanding how a hardware description becomes a physical IC layout using OpenLane + SKY130.
+> 🔍 **Focus:** Understanding how an RTL design is transformed into a physical, verified chip layout using an open-source ASIC flow.
 
-🎯 What This Day Covers
+---
 
-Day 6 moves beyond writing RTL and looking at synthesis results. The focus is the complete ASIC implementation journey: starting with Verilog/SystemVerilog RTL and ending with a verified GDSII layout that can be handed to a semiconductor foundry.
+## 🎯 Day 6 Objective
 
-The topics include:
+Day 6 connects the **RTL-level design work** from the previous stages with the actual physical implementation of an ASIC.
 
-🧰 Open-source EDA tools and their individual roles
+The complete journey is studied — starting from a **Verilog/SystemVerilog description** and progressing through synthesis, timing analysis, floorplanning, placement, clock-tree construction, routing, and physical verification until the final **GDSII** layout is produced.
 
-🏭 Semiconductor foundries and Process Design Kits (PDKs)
+This module introduces:
 
-🔬 SkyWater's SKY130 technology
+* 🔓 Open-source EDA tools
+* 🏭 Semiconductor foundries
+* 📦 Process Design Kits (PDKs)
+* 🌊 SkyWater **SKY130**
+* ⚙️ OpenLane automation
+* 🧠 PicoRV32 processor core
+* 📐 Floorplanning and placement
+* ⚡ Power planning
+* 🕒 Static Timing Analysis
+* 🌳 Clock Tree Synthesis
+* 🛣️ Routing
+* 📊 RC extraction
+* ✅ DRC and LVS
+* 💾 GDSII generation
 
-⚙️ OpenLane as an automated RTL-to-GDSII framework
+---
 
-🧠 PicoRV32 as a realistic processor design
+# 📚 Topics Covered
 
-📐 Floorplanning, power planning and placement
+| #  | Topic                         |
+| -- | ----------------------------- |
+| 01 | 🔓 Open-Source EDA Ecosystem  |
+| 02 | 🏭 Foundries and PDKs         |
+| 03 | 🌊 SkyWater SKY130            |
+| 04 | ⚙️ OpenLane                   |
+| 05 | 🧠 PicoRV32                   |
+| 06 | 🔄 Complete RTL-to-GDSII Flow |
+| 07 | 🔍 Individual Flow Stages     |
+| 08 | 🧰 Tool Reference             |
+| 09 | 🏁 Final Summary              |
 
-🕒 Static Timing Analysis and timing metrics
+---
 
-🌳 Clock Tree Synthesis
+# 1. 🔓 Open-Source EDA Ecosystem
 
-🛣️ Global and detailed routing
+ASIC design traditionally depends heavily on commercial EDA software. Open-source tools provide another way to explore the complete chip-design process without requiring expensive commercial licenses.
 
-📏 RC extraction and post-route timing
+Each tool is responsible for a particular part of the flow.
 
-✅ DRC and LVS physical verification
+### 🧰 Important Open-Source Tools
 
-💾 Final GDSII generation
+| 🔧 Function                             | 🛠️ Tool        |
+| --------------------------------------- | --------------- |
+| RTL Synthesis                           | **Yosys**       |
+| Logic Optimization & Technology Mapping | **ABC**         |
+| Static Timing Analysis                  | **OpenSTA**     |
+| Physical Design                         | **OpenROAD**    |
+| Detailed Routing                        | **TritonRoute** |
+| Layout & DRC                            | **Magic**       |
+| LVS                                     | **Netgen**      |
+| Layout Visualization                    | **KLayout**     |
+| DFT-related Operations                  | **Fault**       |
 
-🗺️ Roadmap
+### 🔗 How they work together
 
-🔓 Open-source EDA environment
-
-🏭 Foundry + PDK fundamentals
-
-🌊 SkyWater SKY130
-
-⚙️ OpenLane automation
-
-🧠 PicoRV32 example
-
-🔄 Complete RTL-to-GDSII journey
-
-🔍 Detailed explanation of every stage
-
-🧰 Tool-to-stage mapping
-
-🏁 Final takeaways
-
-1️⃣ Open-Source EDA: The Toolchain
-
-Traditional ASIC development commonly relies on commercial EDA suites. Open-source projects provide an alternative that allows the complete learning flow to be explored without requiring a commercial license.
-
-🧩 Major Tools and Their Jobs
-
-🔧 Activity
-
-🛠️ Open-Source Tool
-
-🎯 Main Role
-
-RTL synthesis
-
+```text
+RTL
+ │
+ ▼
 Yosys
-
-Converts RTL into a gate-level representation
-
-Logic optimization
-
+ │
+ ▼
 ABC
-
-Optimizes logic and performs technology mapping
-
-Timing analysis
-
+ │
+ ▼
 OpenSTA
-
-Checks timing constraints and path delays
-
-Physical implementation
-
+ │
+ ▼
 OpenROAD
+ │
+ ├── Floorplan
+ ├── Placement
+ ├── CTS
+ └── Routing
+ │
+ ▼
+Magic / Netgen
+ │
+ ▼
+GDSII
+```
 
-Handles floorplanning, placement and other physical tasks
+Individually these are separate tools, but when properly connected they form an entire open-source ASIC implementation flow.
 
-Detailed routing
+**OpenLane** automates this overall process.
 
-TritonRoute
+---
 
-Produces detailed wires and vias
+# 2. 🏭 Foundry & PDK
 
-Layout / DRC
+## 🏗️ What is a Semiconductor Foundry?
 
-Magic
+A **semiconductor foundry** is the manufacturing facility responsible for fabricating integrated circuits.
 
-Layout inspection and design-rule checking
+The designer creates the physical layout, while the foundry uses that layout to manufacture the actual silicon chip.
 
-LVS
+### 🔄 Designer → Silicon
 
-Netgen
-
-Compares layout connectivity with the intended netlist
-
-Layout visualization
-
-KLayout
-
-Opens and inspects physical layouts
-
-DFT work
-
-Fault
-
-Supports design-for-test related activities
-
-🔗 When these utilities are connected in the correct sequence, they provide the ingredients for a complete open RTL-to-GDSII flow. OpenLane brings these stages together and automates their execution.
-
-2️⃣ 🏭 Foundry and PDK — The Manufacturing Connection
-
-A semiconductor foundry is the manufacturing facility that turns a chip's physical layout into an actual silicon device.
-
-The designer does not directly send Verilog to the factory. The RTL must first pass through synthesis and physical implementation until a manufacturing-ready layout is produced.
-
-🔄 Basic Relationship
-
-👨‍💻 Designer
-     │
-     ▼
-📝 RTL Description
-     │
-     ▼
-⚙️ EDA Implementation
-     │
-     ▼
-📐 Physical Layout
-     │
-     ▼
-💾 GDSII
-     │
-     ▼
-🏭 Foundry
-     │
-     ▼
-🔲 Fabricated Silicon
-
-📦 What is a PDK?
-
-A Process Design Kit (PDK) connects the EDA environment to a particular semiconductor manufacturing technology.
-
-It provides the information needed by the tools, including:
-
-🧱 Standard-cell information
-
-⏱️ Timing libraries
-
-📐 LEF and GDS data
-
-⚡ SPICE device models
-
-📏 DRC/LVS rules
-
-🔌 RC extraction information
-
-Without the PDK, the tools would not know the physical characteristics and manufacturing constraints of the target process.
-
-3️⃣ 🌊 SkyWater and the SKY130 Technology
-
-SkyWater Technology, together with Google, made its 130 nm SKY130 process available through an open-source PDK.
-
-This is important for education and experimentation because it allows designers to study a real, manufacturable semiconductor process using an open toolchain rather than relying only on a simplified or imaginary technology.
-
-⭐ Why SKY130?
-
-🔓 Open technology ecosystem
-
-📚 Well documented
-
-🧪 Suitable for experimentation
-
-🏗️ Mature manufacturing process
-
-🎓 Useful for learning the complete ASIC flow
-
-Note: The term 130 nm identifies the process technology. It does not mean that every physical feature on the chip is literally 130 nm wide.
-
-4️⃣ ⚙️ OpenLane — The Automation Layer
-
-Running every EDA program independently would require many manual commands and careful handoff of files between stages.
-
-OpenLane acts as the automation framework that connects the major stages into a repeatable flow.
-
-🔁 Simplified OpenLane Pipeline
-
+```text
+👨‍💻 Chip Designer
+       ↓
 📝 RTL
-  ↓
-⚙️ Synthesis
-  ↓
-🔲 Gate-Level Netlist
-  ↓
-📐 Floorplan
-  ↓
-📍 Placement
-  ↓
-🌳 CTS
-  ↓
-🛣️ Routing
-  ↓
-🔎 Physical Verification
-  ↓
+       ↓
+⚙️ EDA Flow
+       ↓
+📐 Physical Layout
+       ↓
 💾 GDSII
+       ↓
+🏭 Foundry
+       ↓
+🔲 Fabricated Chip
+```
 
-The framework therefore turns a digital RTL design into a physical layout while coordinating the required tools.
+The manufacturing technology determines important characteristics such as:
 
-5️⃣ 🧠 PicoRV32 — A More Realistic Design
+* 🔹 Transistor characteristics
+* 🔹 Available metal layers
+* 🔹 Design rules
+* 🔹 Standard-cell libraries
+* 🔹 Manufacturing limitations
 
-For a full-flow demonstration, a design more meaningful than a simple counter is useful.
+---
 
-PicoRV32, created by Clifford Wolf, is a compact RISC-V RV32 processor core. It contains enough real digital logic to exercise synthesis and physical implementation.
+## 📦 What is a PDK?
 
-Its logic includes areas such as:
+**PDK = Process Design Kit**
 
-🧮 ALU operations
+A PDK provides the information required by EDA tools to design for a particular semiconductor manufacturing process.
 
-🎛️ Control logic
+### A PDK contains information such as:
 
-📖 Instruction decoding
+* 🧱 Standard-cell libraries
+* ⏱️ Timing libraries
+* 📐 LEF files
+* 💾 GDS files
+* ⚡ SPICE models
+* 📏 DRC rules
+* 🔌 LVS rules
+* 📊 RC extraction information
 
-🗃️ Register file
+### 🔗 PDK's Role
 
-🔌 Memory interface
+```text
+EDA Tools  ←──── PDK ────→  Manufacturing Process
+```
 
-Because it is a genuine processor core, it gives a better indication of how the open-source flow behaves on a non-trivial design.
+Without the appropriate PDK, the EDA tools would not know the physical and electrical requirements of the target technology.
 
-6️⃣ 🔄 Complete RTL → GDSII Journey
+---
 
-The complete sequence can be viewed as follows:
+# 3. 🌊 SkyWater & SKY130
 
+**SkyWater Technology**, in collaboration with Google, made its **130 nm SKY130 process** available through an open-source PDK.
+
+This was an important development for open-source silicon because it made it possible to experiment with a real semiconductor process using open-source design tools.
+
+### ⭐ Why SKY130 is useful for learning
+
+* 🔓 Open-source PDK
+* 📖 Well documented
+* 🧪 Suitable for experimentation
+* 🏭 Based on a real manufacturing process
+* 🎓 Excellent for learning ASIC implementation
+
+SKY130 is not a modern leading-edge process. However, its openness and maturity make it very useful for understanding the complete ASIC flow.
+
+> 💡 **Important:** "130 nm" refers to the process technology designation. It does **not** mean that every structure on the chip is exactly 130 nm.
+
+---
+
+# 4. ⚙️ OpenLane
+
+## 🔧 What does OpenLane do?
+
+**OpenLane** acts as an automation framework for the open-source ASIC flow.
+
+Instead of manually running every EDA tool and transferring files between stages, OpenLane coordinates the major stages automatically.
+
+### 🔄 Simplified OpenLane Flow
+
+```text
+       📝 RTL
+         │
+         ▼
+   ⚙️ Synthesis
+         │
+         ▼
+ 🔲 Gate-Level Netlist
+         │
+         ▼
+    📐 Floorplan
+         │
+         ▼
+     📍 Placement
+         │
+         ▼
+       🌳 CTS
+         │
+         ▼
+    🛣️ Routing
+         │
+         ▼
+   🔎 Verification
+         │
+         ▼
+       💾 GDSII
+```
+
+The purpose is to take a digital design and move it systematically toward a physical chip layout.
+
+---
+
+# 5. 🧠 PicoRV32 — A Practical Test Design
+
+A simple counter or multiplexer is useful for basic experiments, but a realistic processor provides a much better test of the complete ASIC flow.
+
+**PicoRV32**, developed by **Clifford Wolf**, is a compact **RISC-V RV32 processor core**.
+
+It contains several real digital-design components, including:
+
+* 🧮 ALU
+* 🎛️ Control logic
+* 📖 Instruction decoder
+* 🗃️ Register file
+* 🔌 Memory interface
+
+Because of this complexity, PicoRV32 provides a more realistic example for testing synthesis and physical implementation.
+
+### 🧠 Why use PicoRV32?
+
+It demonstrates that the open-source flow is capable of handling more than very small educational circuits.
+
+```text
+Processor RTL
+      ↓
+Synthesis
+      ↓
+Physical Implementation
+      ↓
+Verified Layout
+```
+
+---
+
+# 6. 🔄 RTL-to-GDSII: The Complete Journey
+
+The entire ASIC flow can be summarized as:
+
+```text
 📝 RTL Design
       ↓
-⚙️ RTL Synthesis
+⚙️ Synthesis
       ↓
 🔲 Gate-Level Netlist
       ↓
-🕒 Static Timing Analysis
+🕒 STA
       ↓
 📐 Floorplanning
       ↓
@@ -258,7 +280,7 @@ The complete sequence can be viewed as follows:
       ↓
 ✨ Optimization
       ↓
-🛣️ Global Routing
+🌐 Global Routing
       ↓
 🧵 Detailed Routing
       ↓
@@ -269,300 +291,411 @@ The complete sequence can be viewed as follows:
 ✅ DRC + LVS
       ↓
 💾 GDSII
+```
 
-The important idea is that the flow gradually moves from logical behavior to actual physical geometry.
+The flow gradually changes the design from a **logical description** into actual **physical geometry**.
 
-7️⃣ 🔍 Understanding Each Implementation Stage
+---
 
-7.1 📝 RTL Design
+# 7. 🔍 Stage-by-Stage Explanation
 
-RTL describes the intended hardware behavior using languages such as Verilog, SystemVerilog or VHDL.
+## 7.1 📝 RTL Design
 
-At this point, the designer is describing functionality rather than physical dimensions or transistor locations.
+RTL stands for **Register Transfer Level**.
 
-Example
+It describes the behavior and structure of digital hardware using languages such as:
 
+* Verilog
+* SystemVerilog
+* VHDL
+
+At this stage, the design describes **what the hardware should do**, not where its physical components should be placed.
+
+### Example
+
+```verilog
 always @(posedge clk)
     q <= d;
+```
 
-This describes a register. The RTL itself does not specify where that register will physically sit on the chip.
+This represents a register that captures `d` on the active clock edge.
 
-7.2 ⚙️ RTL Synthesis
+At this point, no physical location for that register has been decided.
 
-Synthesis transforms the behavioral RTL into a structural representation.
+---
 
-Main responsibilities
+## 7.2 ⚙️ RTL Synthesis
 
-Yosys
+Synthesis converts the RTL description into a structural gate-level representation.
 
-Reads and processes the RTL
+### 🔹 Yosys
 
-Builds the structural logic
+Yosys processes the RTL and generates a structural netlist.
 
-ABC
+### 🔹 ABC
 
-Optimizes the logic
+ABC performs:
 
-Performs technology mapping
+* Logic optimization
+* Technology mapping
 
-The result is a gate-level design mapped toward available SKY130 standard cells, such as:
+The resulting logic is mapped toward available **SKY130 standard cells**, including:
 
-AND / OR gates
+```text
+AND
+OR
+NAND
+NOR
+INV
+BUF
+MUX
+Flip-Flops
+```
 
-NAND / NOR gates
+### 🔄 Transformation
 
-Inverters
+```text
+RTL
+ ↓
+Logic Representation
+ ↓
+Optimized Logic
+ ↓
+Technology-Mapped Netlist
+```
 
-Buffers
+---
 
-Multiplexers
+# 7.3 🕒 Static Timing Analysis — STA
 
-Flip-flops
+STA checks whether the design can operate within its specified timing requirements.
 
-7.3 🕒 Static Timing Analysis (STA)
+Unlike functional simulation, STA analyzes timing paths mathematically rather than executing the design with input vectors.
 
-STA evaluates whether signal paths can satisfy their timing requirements without performing traditional functional simulation.
+### 📌 Important Timing Parameters
 
-📌 Important Timing Terms
+| Term                | Meaning                                           |
+| ------------------- | ------------------------------------------------- |
+| **WNS**             | Worst Negative Slack                              |
+| **TNS**             | Total Negative Slack                              |
+| **Slack**           | Timing margin between required and actual arrival |
+| **Critical Path**   | Most timing-sensitive path                        |
+| **Setup Violation** | Data arrives too late                             |
+| **Hold Violation**  | Data changes too early                            |
 
-Metric
+### ⏱️ WNS
 
-Meaning
+**Worst Negative Slack** represents the worst timing margin among the analyzed paths.
 
-WNS
+```text
+WNS ≥ 0
+   ↓
+Timing requirement generally satisfied
+```
 
-Worst Negative Slack — the most negative timing margin
+### 📊 TNS
 
-TNS
+**Total Negative Slack** represents the sum of negative slack from violating paths.
 
-Total Negative Slack — combined negative slack from violating paths
+```text
+TNS = 0
+   ↓
+No negative-slack violations in that category
+```
 
-Slack
+Other important timing concepts include:
 
-Difference between required and actual arrival time
+* Clock period
+* Data arrival time
+* Required arrival time
+* Setup time
+* Hold time
+* Critical path
 
-Critical path
+---
 
-Path with the most difficult timing requirement
+# 7.4 📐 Floorplanning
 
-Setup violation
+Floorplanning defines the high-level physical organization of the chip.
 
-Data arrives too late before the clock edge
+It determines or establishes:
 
-Hold violation
+* 📏 Die dimensions
+* ⬜ Core dimensions
+* 🧱 Standard-cell area
+* 🔌 I/O positions
+* ⚡ Power structures
 
-Data changes too early after the clock edge
+### 🗺️ Basic Floorplan
 
-Generally:
+```text
++--------------------------------+
+|              DIE               |
+|                                |
+|      +------------------+      |
+|      |       CORE       |      |
+|      |                  |      |
+|      | Standard Cells   |      |
+|      |                  |      |
+|      +------------------+      |
+|                                |
++--------------------------------+
+```
 
-WNS ≥ 0  →  timing requirement is satisfied
-TNS = 0  →  no negative-slack violations in that category
+### ⚠️ Why is floorplanning important?
 
-Clock period, data arrival time and required arrival time are also central to STA.
+A poor floorplan can cause problems later with:
 
-7.4 📐 Floorplanning
+* ⏱️ Timing
+* 🚦 Congestion
+* 🛣️ Routing
+* ⚡ Power
+* 📐 Area
 
-Floorplanning establishes the chip's high-level physical organization.
+Therefore, floorplanning strongly influences the quality of the later stages.
 
-It decides or influences:
+---
 
-📏 Die dimensions
+# 7.5 ⚡ Power Planning
 
-⬜ Core dimensions
+Power planning creates the physical network used to distribute power and ground throughout the chip.
 
-🧱 Standard-cell region
+### Main structures
 
-🔌 I/O locations
+* 🔲 Power rings
+* ➖ Power straps
+* 🛤️ Standard-cell power rails
 
-⚡ Power distribution structure
+The network connects **VDD** and **VSS** to the cells.
 
-🗺️ Conceptual Floorplan
+### 🎯 Main objective
 
-+--------------------------------------+
-|                DIE                   |
-|                                      |
-|       +------------------------+     |
-|       |         CORE           |     |
-|       |                        |     |
-|       |     Standard Cells     |     |
-|       |                        |     |
-|       +------------------------+     |
-|                                      |
-+--------------------------------------+
+```text
+Stable Power Distribution
+          +
+Reduced IR Drop
+          ↓
+Reliable Circuit Operation
+```
 
-A poor floorplan can create problems later in:
+The goal is to maintain a stable supply voltage throughout the design.
 
-⏱️ Timing
+---
 
-🛣️ Routing
+# 7.6 📍 Placement
 
-🚦 Congestion
+Placement decides where the standard cells will physically reside inside the core.
 
-⚡ Power
+There are two important stages.
 
-📐 Area utilization
+### 🌐 Global Placement
 
-Therefore, floorplanning has a strong influence on the rest of the implementation.
+Global placement determines approximate locations for cells while considering:
 
-7.5 ⚡ Power Planning
+* Wire length
+* Timing
+* Congestion
+* Area utilization
 
-Power planning creates the network that distributes supply and ground across the chip.
+### 📌 Detailed Placement
 
-Typical structures include:
+Detailed placement takes those approximate positions and makes them physically legal.
 
-🔲 Power rings
+```text
+Global Placement
+       ↓
+Approximate Locations
+       ↓
+Detailed Placement
+       ↓
+Legal Cell Locations
+```
 
-➖ Power straps
+The placement process tries to balance several competing requirements simultaneously.
 
-🧱 Standard-cell rails
+---
 
-The goal is to deliver VDD/VSS reliably while reducing supply-voltage variation and IR drop.
+# 7.7 🌳 Clock Tree Synthesis — CTS
 
-7.6 📍 Placement
+A clock signal must reach a large number of flip-flops.
 
-Placement determines where the standard cells are physically located.
+CTS constructs a buffered clock network to distribute the clock with controlled delay and skew.
 
-Two major phases
+### 🌳 Simple Clock Structure
 
-🌐 Global Placement
+```text
+              CLK
+               │
+             Buffer
+            /      \
+        Buffer    Buffer
+        /   \      /   \
+       FF   FF    FF   FF
+```
 
-Finds approximate cell positions
+### CTS concentrates on:
 
-Attempts to balance area, timing, wire length and congestion
+* ↔️ Clock skew
+* ⏱️ Clock delay
+* 🔢 Fanout
+* 📈 Transition time
 
-📌 Detailed Placement
+The objective is to distribute the clock effectively to sequential elements.
 
-Converts the approximate positions into legal physical locations
+---
 
-Ensures cells occupy valid placement sites
+# 7.8 🛣️ Routing
 
-The placement process must balance several competing goals rather than optimizing only one parameter.
+Routing establishes the physical interconnections between cells.
 
-7.7 🌳 Clock Tree Synthesis (CTS)
+There are two major routing stages.
 
-A clock signal has to reach many sequential elements. CTS builds a buffered clock distribution network so that clock arrival is controlled across the design.
+## 🌐 Global Routing
 
-🌲 Simple Clock Tree
+Global routing decides the approximate path and routing resources that each connection should use.
 
-              CLOCK
-                │
-              Buffer
-             /      \
-        Buffer      Buffer
-        /   \       /   \
-       FF   FF     FF   FF
+## 🧵 Detailed Routing
 
-CTS focuses on factors such as:
+Detailed routing creates the actual:
 
-🕒 Clock delay
+* Metal wires
+* Vias
+* Layer connections
 
-↔️ Clock skew
+while respecting technology constraints.
 
-🔢 Fanout
+### 📏 Routing must obey rules such as:
 
-📈 Transition time
+* Minimum metal width
+* Minimum spacing
+* Via restrictions
+* Layer requirements
 
-The objective is to distribute the clock in a controlled and balanced manner.
+**TritonRoute** is used for detailed routing.
 
-7.8 🛣️ Routing
+---
 
-Routing connects placed cells using physical metal interconnect.
+# 7.9 📊 RC Extraction
 
-🌐 Global Routing
+Real interconnects are not ideal.
 
-Determines approximate routes and resources that the connections will use.
+Physical wires contain:
 
-🧵 Detailed Routing
-
-Creates the actual physical wires and vias while following technology rules for:
-
-📏 Minimum width
-
-↔️ Spacing
-
-🔩 Via placement
-
-🧱 Layer constraints
-
-TritonRoute is used for detailed routing in the open-source flow.
-
-7.9 📊 RC Extraction
-
-Physical wires are not ideal connections. They contain:
-
+```text
 R → Resistance
-
 C → Capacitance
+```
 
-These parasitic components introduce additional delay.
+These parasitic values affect signal delay.
 
-RC extraction obtains these values from the actual routed geometry so that later timing analysis can use more realistic interconnect information.
+### 🔄 Extraction Process
 
-7.10 🕒 Post-Route STA
+```text
+Actual Routed Layout
+        ↓
+Extract R + C
+        ↓
+Parasitic Information
+        ↓
+Accurate Timing Analysis
+```
 
-After routing and RC extraction, timing is checked again.
+RC extraction therefore makes the timing analysis more realistic.
 
-This analysis is more representative of the final physical implementation because the timing calculation now includes parasitic effects associated with the actual routed wires.
+---
 
-Before Routing
-     ↓
-Estimated Interconnect
-     ↓
+# 7.10 🕒 Post-Route STA
+
+After routing, timing analysis is performed again using the extracted parasitic information.
+
+This provides a more realistic timing picture because actual physical interconnect effects are now included.
+
+```text
 Placement / Routing
-     ↓
+        ↓
+Physical Wires
+        ↓
 RC Extraction
-     ↓
+        ↓
 Post-Route STA
-     ↓
-More Realistic Timing
+        ↓
+Realistic Timing Results
+```
 
-7.11 ✅ Physical Verification
+This is one of the most important timing checks before the design proceeds toward final verification and tapeout.
 
-Before fabrication, the physical layout must be checked against manufacturing and connectivity requirements.
+---
 
-📏 DRC — Design Rule Check
+# 7.11 ✅ Physical Verification
 
-DRC verifies that the layout follows the foundry's physical rules, including:
+The physical layout must satisfy both manufacturing rules and connectivity requirements.
 
-Minimum metal width
+Two major checks are:
 
-Required spacing
+## 📏 DRC — Design Rule Check
 
-Via constraints
+DRC verifies that the layout obeys the foundry's manufacturing rules.
 
-Other manufacturing geometry rules
+Examples include:
 
-🔌 LVS — Layout Versus Schematic
+* Minimum width
+* Minimum spacing
+* Via rules
+* Other geometry constraints
 
-LVS checks whether the connectivity represented by the physical layout matches the intended gate-level netlist.
+### 🎯 Purpose
 
-       Gate-Level Netlist
-               │
-               │ compare
-               ▼
-        Physical Layout
-               │
-               ▼
-           LVS Result
+```text
+Layout
+ ↓
+Check Manufacturing Rules
+ ↓
+DRC Result
+```
 
-In the open-source flow, Magic is used for DRC and Netgen for LVS.
+---
 
-7.12 💾 GDSII Generation
+## 🔌 LVS — Layout Versus Schematic
 
-Once the physical design has passed the required checks, the layout can be exported as GDSII.
+LVS checks whether the physical layout represents the same connectivity as the intended gate-level design.
 
-GDSII contains the physical geometry required to describe the chip layout, including:
+```text
+Gate-Level Netlist
+        │
+        │ Compare
+        ▼
+Physical Layout
+        │
+        ▼
+     LVS Result
+```
 
-🧱 Shapes
+### 🛠️ Tools
 
-🧩 Cells
+| Check | Tool       |
+| ----- | ---------- |
+| DRC   | **Magic**  |
+| LVS   | **Netgen** |
 
-🗂️ Layers
+---
 
-🧵 Interconnect geometry
+# 7.12 💾 GDSII Generation
 
-Final Direction
+After implementation and verification, the final physical design is exported in **GDSII** format.
 
+GDSII represents the physical layout information required for fabrication.
+
+It contains information describing:
+
+* 🧱 Physical shapes
+* 🗂️ Layers
+* 🧩 Cells
+* 🧵 Interconnections
+* 📐 Layout geometry
+
+### 🏁 Final Path
+
+```text
 Routing
    ↓
 Physical Verification
@@ -572,139 +705,93 @@ GDSII
 Tapeout
    ↓
 🏭 Fabrication
+```
 
-GDSII is therefore the final physical representation produced before the design moves toward manufacturing.
+GDSII is therefore the final physical layout representation generated by the flow.
 
-8️⃣ 🧰 Open-Source Tool Reference
+---
 
-🔹 Flow Stage
+# 8. 🧰 Tool Reference
 
-🛠️ Tool
+| 🔹 Stage                | 🛠️ Tool            | 🎯 Responsibility                         |
+| ----------------------- | ------------------- | ----------------------------------------- |
+| RTL Synthesis           | **Yosys**           | Converts RTL to gate-level representation |
+| Logic Optimization      | **ABC**             | Optimization and technology mapping       |
+| Timing Analysis         | **OpenSTA**         | Static timing verification                |
+| Physical Implementation | **OpenROAD**        | Floorplan, placement and physical design  |
+| CTS                     | **OpenROAD / CTS**  | Builds the clock network                  |
+| Global Routing          | **OpenROAD**        | Determines approximate routes             |
+| Detailed Routing        | **TritonRoute**     | Creates physical wires and vias           |
+| RC Extraction           | **OpenRCX**         | Extracts parasitic R and C                |
+| DRC                     | **Magic**           | Checks design rules                       |
+| LVS                     | **Netgen**          | Compares layout and netlist               |
+| Layout Viewer           | **KLayout / Magic** | Visualizes the layout                     |
+| Final Output            | **—**               | GDSII                                     |
 
-📌 Purpose
+---
 
-RTL Synthesis
+# 🏁 9. Final Takeaways
 
-Yosys
+Day 6 brings together the concepts of **digital design, synthesis, timing analysis and physical implementation**.
 
-RTL → gate-level netlist
+The most important flow to remember is:
 
-Logic Optimization
+```text
+📝 RTL
+ ↓
+⚙️ Synthesis
+ ↓
+🔲 Netlist
+ ↓
+🕒 STA
+ ↓
+📐 Floorplan
+ ↓
+⚡ Power Plan
+ ↓
+📍 Placement
+ ↓
+🌳 CTS
+ ↓
+🛣️ Routing
+ ↓
+📊 RC Extraction
+ ↓
+🕒 Post-Route STA
+ ↓
+✅ DRC + LVS
+ ↓
+💾 GDSII
+ ↓
+🏭 Fabrication
+```
 
-ABC
+### 💡 Core Idea
 
-Logic optimization + technology mapping
+**RTL is only the beginning.**
 
-STA
+The RTL describes the intended behavior of the hardware, but the remaining stages determine how that logic becomes a real physical chip.
 
-OpenSTA
+Throughout the flow:
 
-Timing verification
+* ⚙️ Technology mapping determines which cells implement the logic.
+* 📐 Floorplanning determines the physical organization.
+* 📍 Placement determines where cells are located.
+* 🌳 CTS distributes the clock.
+* 🛣️ Routing creates physical connections.
+* 📊 RC extraction captures wire parasitics.
+* 🕒 STA checks timing.
+* 📏 DRC checks manufacturing rules.
+* 🔌 LVS checks connectivity.
+* 💾 GDSII represents the final physical layout.
 
-Physical Design
+Therefore, decisions made during RTL design can eventually influence **area, timing, congestion and power** in the final chip.
 
-OpenROAD
+---
 
-Floorplanning, placement and implementation
+## ⭐ Day 6 in One Sentence
 
-CTS
+> **🧠 RTL defines the hardware → ⚙️ EDA tools implement it → 📐 physical design creates the layout → ✅ verification validates it → 💾 GDSII represents the final chip.**
 
-OpenROAD / CTS
+---
 
-Clock network generation
-
-Global Routing
-
-OpenROAD
-
-Approximate routing paths
-
-Detailed Routing
-
-TritonRoute
-
-Physical wires and vias
-
-RC Extraction
-
-OpenRCX
-
-Parasitic extraction
-
-DRC
-
-Magic
-
-Design-rule verification
-
-LVS
-
-Netgen
-
-Layout/netlist comparison
-
-Layout Viewing
-
-KLayout / Magic
-
-Physical layout inspection
-
-Final Output
-
-—
-
-GDSII
-
-🏁 9️⃣ Final Takeaway
-
-Day 6 ties together the concepts learned at the RTL level with the physical reality of semiconductor implementation.
-
-The journey can be remembered as:
-
-🧠 Describe the hardware
-        ↓
-⚙️ Synthesize the logic
-        ↓
-🕒 Check timing
-        ↓
-📐 Build the floorplan
-        ↓
-⚡ Distribute power
-        ↓
-📍 Place the cells
-        ↓
-🌳 Build the clock network
-        ↓
-🛣️ Route the design
-        ↓
-📊 Extract parasitics
-        ↓
-🕒 Re-check timing
-        ↓
-✅ Verify DRC + LVS
-        ↓
-💾 Generate GDSII
-
-💡 Big Picture
-
-RTL is only the starting description of what the hardware should do.
-
-The remaining stages determine how that logic is:
-
-mapped to a real technology,
-
-positioned physically,
-
-connected using metal,
-
-checked for timing,
-
-verified against manufacturing rules,
-
-and finally represented as a fabrication-ready GDSII layout.
-
-A decision made during RTL development can ultimately affect area, timing, congestion and power much later in the flow. Understanding the complete pipeline makes it easier to see how digital design decisions propagate all the way down to the physical chip.
-
-⭐ Day 6 in One Line
-
-RTL describes the idea → EDA tools implement it → physical verification validates it → GDSII captures the chip layout.
