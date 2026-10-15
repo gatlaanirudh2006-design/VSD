@@ -1,111 +1,117 @@
-# 🚀 VSDBabySoC — Physical Design & Routed Static Timing Analysis
+# 🚀 VSDBabySoC SKY130 HD — Post-Route Static Timing Analysis
 
 ## 📘 Overview
 
-This project documents the physical-design flow and post-route **Static Timing Analysis (STA)** of **VSDBabySoC** using the **Sky130 HD standard-cell library**.
+This project documents the physical-design flow and post-route **Static Timing Analysis (STA)** of VSDBabySoC using the **SKY130 HD standard-cell library**.
 
-The report covers floorplanning, placement, routing, extracted interconnect parasitics, and independent timing analysis across **16 Sky130 HD PVT library corners**. Screenshots and timing observations are provided in the accompanying report.
+The report analyzes setup and hold timing across **16 Process-Voltage-Temperature (PVT) corners**, supported by physical-design screenshots, timing charts, and critical-path analysis.
 
-### 🎯 Project Objectives
+### 🎯 Project Highlights
 
-- 📐 Understand the floorplanning and placement stages.
-- 🔗 Examine the final routed physical design.
-- ⏱️ Analyze setup and hold timing.
-- 📊 Compare timing results across 16 library corners.
-- 🔍 Identify timing violations and evaluate the reported results.
+- 🏗️ Floorplanning, placement, and routed-layout analysis
+- ⏱️ Setup WNS and TNS analysis across 16 PVT corners
+- 🔍 Hold worst-slack and TNS evaluation
+- 📊 Timing comparison charts
+- ⚠️ Critical-path investigation and DRC observations
 
 ---
 
 ## 🔄 1. Physical Design Flow
 
 ```text
-RTL / Synthesized Design
-          ↓
-     Floorplanning
-          ↓
-       Placement
-          ↓
-        Routing
-          ↓
- Parasitic Extraction
-          ↓
-    Post-route STA
-          ↓
-   Timing Evaluation
+Synthesis
+    ↓
+Floorplanning
+    ↓
+Placement
+    ↓
+Routing
+    ↓
+Parasitic Extraction
+    ↓
+Post-Route STA
+    ↓
+Timing Analysis
 ```
 
 ---
 
-## 🏗️ 2. Physical Design Stages
+## 🧰 2. Methodology and STA Inputs
 
-### 🔹 Floorplanning
-
-Floorplanning establishes the core area and initial physical organization of the design.
-
-**📌 Report observations**
-- OpenROAD `2_floorplan` stage
-- PLL and DAC macro instances
-- PLL instance with placement status `LOCKED`
-
-### 🔹 Placement
-
-Placement assigns standard cells to legal locations while considering timing, congestion, and wirelength.
-
-**📌 Report observations**
-- OpenROAD `3_place` view
-- Standard-cell placement
-- Estimated placement-stage parasitics
-
-*Note:* Placement-stage parasitics differ from extracted parasitics obtained after routing.
-
-### 🔹 Routing
-
-Routing creates physical metal wires and vias to connect placed cells and macros.
-
-The final routed database and extracted parasitics are used for post-route timing analysis.
-
----
-
-## 📂 3. Post-route STA Inputs
-
-| Input File | Purpose |
+| Input | Purpose |
 |---|---|
-| `6_final.odb` | Final routed OpenDB database |
+| `5_route.odb` | Routed OpenDB database |
+| `5_route.sdc` | Timing constraints |
 | `6_final.spef` | Extracted interconnect parasitics |
-| `5_route.sdc` | Route-stage timing constraints |
-| Sky130 HD Liberty `.lib` files | Cell timing models for individual analysis runs |
+| SKY130 HD Liberty `.lib` | Standard-cell timing models |
+| `avsddac.lib` | DAC macro timing library |
+| `avsdpll.lib` | PLL macro timing library |
 
-**⏱️ Clock period:** `11.000 ns`
+**⏱️ Clock constraint:** `11.000 ns`
 
-The report uses propagated clock timing.
+**📡 Nominal constrained frequency:** Approximately `90.91 MHz`
+
+The clock is defined as:
+
+```tcl
+create_clock -name clk -period 11.0000 [get_pins {pll/CLK}]
+```
+
+The clock period represents the target constraint, not proof of the achieved operating frequency.
 
 ---
 
-## 📊 4. Setup Timing Analysis — 16 PVT Corners
+## 📊 3. Setup and Hold Results — 16 PVT Corners
 
-Setup timing was evaluated through separate runs, with one Sky130 HD Liberty library corner used per run.
+All timing values are in nanoseconds. The hold column represents hold worst slack.
 
-### ⚠️ Key Results
+| PVT Corner | Setup WNS | Setup TNS | Hold Slack | Hold TNS |
+|---|---:|---:|---:|---:|
+| `ff_100C_1v65` | 3.27 | 0.00 | 1.50 | 0.00 |
+| `ff_100C_1v95` | 6.50 | 0.00 | 3.25 | 0.00 |
+| `ff_n40C_1v56` | 9.80 | 0.00 | 5.00 | 0.00 |
+| `ff_n40C_1v65` | 6.00 | 0.00 | 0.26 | 0.00 |
+| `ff_n40C_1v76` | 10.00 | 0.00 | 0.23 | 0.00 |
+| `ff_n40C_1v95` | 8.06 | 0.00 | 0.19 | 0.00 |
+| `ss_100C_1v40` | -3.34 | -462.24 | 0.85 | 0.00 |
+| `ss_100C_1v60` | 1.29 | 0.00 | 0.64 | 0.00 |
+| `ss_n40C_1v28` | **-32.03** | **-15425.60** | 2.75 | 0.00 |
+| `ss_n40C_1v35` | -17.90 | -7390.62 | 1.23 | 0.00 |
+| `ss_n40C_1v40` | -12.08 | -3942.03 | 3.10 | 0.00 |
+| `ss_n40C_1v44` | -8.72 | -2114.08 | 0.95 | 0.00 |
+| `ss_n40C_1v60` | -1.00 | -19.01 | 0.65 | 0.00 |
+| `ss_n40C_1v76` | 2.52 | 0.00 | 1.85 | 0.00 |
+| `tt_025C_1v80` | 6.16 | 0.00 | 0.32 | 0.00 |
+| `tt_100C_1v80` | -18.22 | -5588.14 | 0.30 | 0.00 |
 
-| Library Corner | WNS | TNS | Observation |
-|---|---:|---:|---|
-| `ss_n40C_1v28` | −32.03 ns | −15425.64 ns | ❌ Setup violation |
-| `ss_100C_1v40` | −3.34 ns | −462.24 ns | ❌ Setup violation |
-| Other reported corners | 0.00 ns in summary | 0.00 ns in summary | No negative setup slack reported |
+### 🔎 Key Observations
 
-**📌 Important:** A WNS/TNS summary of `0.00` means no negative slack was reported in that summary. It does not mean the worst path slack is necessarily zero.
+- ❌ **7 corners** have negative setup WNS.
+- ❌ **6 corners** have negative setup TNS.
+- 🔴 Worst setup WNS: **−32.03 ns** at `ss_n40C_1v28`.
+- 🔴 Worst setup TNS: **−15425.60 ns** at `ss_n40C_1v28`.
+- ✅ All 16 corners report positive hold worst slack.
+- ✅ Hold TNS is `0.00 ns` across all supplied corners.
 
-### 🔍 Example: Worst Setup Path
+A WNS/TNS summary of zero means no negative slack was reported in that summary; it does not necessarily mean the worst path slack is exactly zero.
 
-For the `ss_n40C_1v28` corner, the report identifies a register-to-register path in the CPU logic.
+---
+
+## ⏱️ 4. Setup Timing Analysis
+
+Setup timing verifies that data reaches the capture register before the required clock edge.
+
+Negative setup slack indicates a timing violation.
+
+### 🔴 Worst Setup Corner: `ss_n40C_1v28`
 
 | Parameter | Reported Value |
 |---|---|
-| Startpoint | `core.CPU_src1_value_a3[14]` |
-| Endpoint | `core.CPU_Xreg_value_a4[10][27]` |
+| Startpoint | `core.CPU_src1_value_a3[14]$_DFF_P_` |
+| Endpoint | `core.CPU_Xreg_value_a4[10][27]$_SDFFE_PP0P_` |
 | Data arrival time | 46.45 ns |
 | Data required time | 14.42 ns |
-| Slack | **−32.03 ns — VIOLATED** |
+| Setup slack | **−32.03 ns — VIOLATED** |
 
 **Slack calculation:**
 
@@ -115,40 +121,4 @@ Slack = Required Time − Arrival Time
       = −32.03 ns
 ```
 
-The path contains multiple combinational cells, contributing to late data arrival under the slow, low-voltage timing model.
-
----
-
-## ⏱️ 5. Hold Timing Analysis
-
-The supplied hold reports show positive worst hold-path slack and status **MET** for all 16 analyzed corners.
-
-### 🔹 Example: `ss_n40C_1v35`
-
-| Parameter | Reported Value |
-|---|---:|
-| Data arrival time | 4.38 ns |
-| Data required time | 3.17 ns |
-| Hold slack | **+1.21 ns — MET** |
-
-**📌 Observation:** Hold WNS/TNS values of zero indicate that no negative hold slack was reported in the summary. Worst hold-path slack should be evaluated separately.
-
----
-
-## 📈 6. Results and Observations
-
-- 🏗️ Floorplanning, placement, and routing stages are documented.
-- ⏱️ Hold timing is reported as passing across all 16 analyzed corners.
-- ⚠️ Setup violations remain in several slow-slow corners.
-- 🔴 The most severe reported setup result occurs at `ss_n40C_1v28`.
-- 🔍 Timing results should be validated before making signoff claims.
-
-### ⚠️ Timing Validation
-
-**Timing closure cannot be claimed from the supplied results alone.**
-
-Before treating the results as signoff-quality data, verify that every run used the intended:
-
-- Liberty timing library
-- Routed ODB database
-- Extracted SPE
+The path contains
